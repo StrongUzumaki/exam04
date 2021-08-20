@@ -5,7 +5,7 @@
 #define SIDE_OUT	0
 #define SIDE_IN		1
 
-#define	STDIN		0
+#define STDIN		0
 #define STDOUT		1
 #define STDERR		2
 
@@ -14,21 +14,19 @@
 #define TYPE_BREAK	2
 
 #ifdef TEST_SH
-# define	TEST 1
+# define TEST		1
 #else
-#define TEST 0
+# define TEST		0
 #endif
 
-
-
-typedef struct s_list
+typedef struct	s_list
 {
-	char		**args;
-	int			length;
-	int			type;
-	int			pipes[2];
-	struct s_list *previous;
-	struct s_list *next;
+	char			**args;
+	int				length;
+	int				type;
+	int				pipes[2];
+	struct s_list	*previous;
+	struct s_list	*next;
 }				t_list;
 
 int ft_strlen(char const *str)
@@ -36,7 +34,7 @@ int ft_strlen(char const *str)
 	int	i;
 
 	i = 0;
-	while(str[i])
+	while (str[i])
 		i++;
 	return (i);
 }
@@ -55,7 +53,7 @@ int exit_fatal(void)
 	return (EXIT_FAILURE);
 }
 
-void	*exit_fatal_ptr(void)
+void *exit_fatal_ptr(void)
 {
 	exit_fatal();
 	exit(EXIT_FAILURE);
@@ -65,7 +63,7 @@ void	*exit_fatal_ptr(void)
 char *ft_strdup(char const *str)
 {
 	char	*copy;
-	int			i;
+	int		i;
 
 	if (!(copy = (char*)malloc(sizeof(*copy) * (ft_strlen(str) + 1))))
 		return (exit_fatal_ptr());
@@ -81,9 +79,8 @@ char *ft_strdup(char const *str)
 
 int add_arg(t_list *cmd, char *arg)
 {
-
 	char	**tmp;
-	int			i;
+	int		i;
 
 	i = 0;
 	tmp = NULL;
@@ -105,7 +102,7 @@ int add_arg(t_list *cmd, char *arg)
 
 int list_push(t_list **list, char *arg)
 {
-	t_list *new;
+	t_list	*new;
 
 	if (!(new = (t_list*)malloc(sizeof(*new))))
 		return (exit_fatal());
@@ -123,7 +120,7 @@ int list_push(t_list **list, char *arg)
 	return (add_arg(new, arg));
 }
 
-int	list_rewind(t_list **list)
+int list_rewind(t_list **list)
 {
 	while (*list && (*list)->previous)
 		*list = (*list)->previous;
@@ -133,10 +130,10 @@ int	list_rewind(t_list **list)
 int list_clear(t_list **cmds)
 {
 	t_list	*tmp;
-	int			i;
+	int		i;
 
 	list_rewind(cmds);
-	while(*cmds)
+	while (*cmds)
 	{
 		tmp = (*cmds)->next;
 		i = 0;
@@ -144,7 +141,7 @@ int list_clear(t_list **cmds)
 			free((*cmds)->args[i++]);
 		free((*cmds)->args);
 		free(*cmds);
-		*cmds=tmp;
+		*cmds = tmp;
 	}
 	*cmds = NULL;
 	return (EXIT_SUCCESS);
@@ -152,7 +149,7 @@ int list_clear(t_list **cmds)
 
 int parse_arg(t_list **cmds, char *arg)
 {
-	int		is_break;
+	int	is_break;
 
 	is_break = (strcmp(";", arg) == 0);
 	if (is_break && !*cmds)
@@ -171,9 +168,9 @@ int parse_arg(t_list **cmds, char *arg)
 int exec_cmd(t_list *cmd, char **env)
 {
 	pid_t	pid;
-	int	ret;
-	int	status;
-	int	pipe_open;
+	int		ret;
+	int		status;
+	int		pipe_open;
 
 	ret = EXIT_FAILURE;
 	pipe_open = 0;
@@ -189,11 +186,11 @@ int exec_cmd(t_list *cmd, char **env)
 	else if (pid == 0)
 	{
 		if (cmd->type == TYPE_PIPE
-				&& dup2(cmd->pipes[SIDE_IN], STDOUT) < 0)
-				return (exit_fatal());
+			&& dup2(cmd->pipes[SIDE_IN], STDOUT) < 0)
+			return (exit_fatal());
 		if (cmd->previous && cmd->previous->type == TYPE_PIPE
-				&& dup2(cmd->previous->pipes[SIDE_OUT], STDIN) < 0)
-				return (exit_fatal());
+			&& dup2(cmd->previous->pipes[SIDE_OUT], STDIN) < 0)
+			return (exit_fatal());
 		if ((ret = execve(cmd->args[0], cmd->args, env)) < 0)
 		{
 			show_error("error: cannot execute ");
@@ -250,7 +247,7 @@ int exec_cmds(t_list **cmds, char **env)
 	return (ret);
 }
 
-int main(int argc, char *argv[], char *env[])
+int main(int argc, char **argv, char **env)
 {
 	t_list	*cmds;
 	int		i;
@@ -265,6 +262,7 @@ int main(int argc, char *argv[], char *env[])
 		ret = exec_cmds(&cmds, env);
 	list_clear(&cmds);
 	if (TEST)
-		while(1);
+		while (1);
 	return (ret);
 }
+
